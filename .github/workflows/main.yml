@@ -3,13 +3,52 @@ on:
   push:
     branches:
       - master
+env:
+  NODE_ENV: prod
+  
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    env:
+      NODE_ENV: dev
+    strategy:
+      matrix:
+        node: [16,18,20]
+        os: [ubnutu-latest,windows-latest]
+        env: [dev,prod,test,qa]
+        exclude:
+           - node: 20
+             os: windows-latest
     steps:
       - name: checkout code
         uses: actions/checkout@v3
+      - name: steup Nodejs
+        uses: actions/setup-node@v3
+        with: 
+           node-version: ${{ matrix.node }}
+        if: ${{matrix.env}} == 'prod'
       - name: Run tests
         run: npm test
+      - name: Install Dependencies
+        run: npm install
+        env:
+          NODE: prod
+      - name: Upload Artifact
+        if: success()
+        uses: actions/upload-artifact@v5.0.0
+        with:
+           name: version
+           path: version.txt
+
+  test:
+    runs-on: windows-latest
+    needs: [build]
+    if: ${{ needs.build.result == 'success' && needs.test.result == 'success' }}
+    steps:
+      - name: First One
+        uses: actions/download-artifact@v6.0.0
+        with:
+          name: version
+
         
   
