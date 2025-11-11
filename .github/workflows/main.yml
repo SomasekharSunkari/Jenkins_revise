@@ -1,8 +1,14 @@
 name: first
 on:
-  push:
-    branches:
-      - master
+  workflow_dispatch:
+    inputs:
+       env:
+         description: 'Enter Environment'
+         required: true
+         default: dev
+  # push:
+  #   branches:
+  #     - master
 env:
   NODE_ENV: prod
   
